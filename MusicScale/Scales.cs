@@ -66,8 +66,7 @@ namespace MusicScale
             foreach (var pair in ScalesNames)
                 for (int i = 0; i < pair.Item1.Length; i++)
                     if ((chord.Mask & ~pair.Item1[i].Mask) == 0)
-                    { }
-                        yield return new NamedScale(pair.Item1[i], pair.Item2[Common.ModuloOctave(i - chord.BaseNote, pair.Item2.Length)]);
+                        yield return new NamedScale(pair.Item1[i], null); 
         }
     }
 }
