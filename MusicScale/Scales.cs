@@ -8,7 +8,7 @@ namespace MusicScale
 {
     public static class Scales
     {
-        public static readonly Scale[] Major, MelodicMinor, Diminished, All;
+        public static readonly Scale[] Major, MelodicMinor, HarmonicMajor, HarmonicMinor, Diminished, All;
 
         private static readonly string[] MajorNames = 
         { 
@@ -32,6 +32,28 @@ namespace MusicScale
             "Altered (super Locrian) (VII)        dominant 7",
         };
 
+        private static readonly string[] HarmonicMajorNames =
+        {
+            "Harmonic major (I)                   <excluded>",
+            "Dorian b5 (II)                       <excluded>",
+            "Phrygian b4 (III)                    <excluded>",
+            "Lydian b3 (IV)                       <excluded>",
+            "Mixolydian b2 (V)                    <excluded>",
+            "Lydian #2 #5 (VI)                    <excluded>",
+            "Locrian diminished (VII)             <excluded>",
+        };
+
+        private static readonly string[] HarmonicMinorNames =
+        {
+            "Harmonic minor (I)                   <excluded>",
+            "Locrian #6 (II)                      <excluded>",
+            "Ionian aug (III)                     <excluded>",
+            "Romanian (IV)                        <excluded>",
+            "Phrygian dominant (V)                <excluded>",
+            "Lydian #2 (VI)                       <excluded>",
+            "Ultralocrian (VII)                   <excluded>",
+        };
+
         private static readonly string[] DiminishedNames = 
         {
             "Symmetric diminished (whole-half)    dominant 7",
@@ -48,15 +70,23 @@ namespace MusicScale
             var melodicMinorGenerator = new Scale(Common.ParseMask("10110,1010101"));
             MelodicMinor = Enumerable.Range(0, 12).Select(i => melodicMinorGenerator.Shift(-i)).ToArray();
 
+            var harmonicMajorGenerator = new Scale(Common.ParseMask("10101,1011001"));
+            HarmonicMajor = Enumerable.Range(0, 12).Select(i => harmonicMajorGenerator.Shift(-i)).ToArray();
+
+            var harmonicMinorGenerator = new Scale(Common.ParseMask("10110,1011001"));
+            HarmonicMinor = Enumerable.Range(0, 12).Select(i => harmonicMinorGenerator.Shift(-i)).ToArray();
+
             var diminishedGenerator = new Scale(Common.ParseMask("101,101,101,101"));
             Diminished = Enumerable.Range(0, 3).Select(i => diminishedGenerator.Shift(-i)).ToArray();
 
-            All = Major.Concat(MelodicMinor).Concat(Diminished).ToArray();
+            All = Major.Concat(MelodicMinor).Concat(HarmonicMajor).Concat(HarmonicMinor).Concat(Diminished).ToArray();
 
             AllScalesNames = new[]
             {
                 Tuple.Create(Major, MajorNames),
                 Tuple.Create(MelodicMinor, MelodicMinorNames),
+                Tuple.Create(HarmonicMajor, HarmonicMajorNames),
+                Tuple.Create(HarmonicMinor, HarmonicMinorNames),
                 Tuple.Create(Diminished, DiminishedNames),
             };
         }

@@ -21,7 +21,7 @@ namespace TestScale
         }
 
         [TestMethod]
-        public void NoTripleOneDoubleZeroScales()
+        public void NoTripleOneOrZeroScales()
         {
             for (int i = 0; i < Scales.All.Length; i++)
             {
@@ -33,8 +33,8 @@ namespace TestScale
                 {
                     if ((mask % 2) == 0)
                     {
-                        if (++zeroes > 1)
-                            Assert.Fail("Scale contains two consecutive zeroes: " + Scales.All[i]);
+                        if (++zeroes > 2)
+                            Assert.Fail("Scale contains three consecutive zeroes: " + Scales.All[i]);
                         ones = 0;
                     }
                     else
@@ -69,7 +69,7 @@ namespace TestScale
             AssertContains("(VII)", Scales.FindFit(Chord.FromNotes("B", "C", "D", "Eb", "F", "G", "A")).Single().Name);
 
             AssertContains("Locrian",         Scales.FindFit(Chord.FromNotes("G","Ab","Bb","C","Db","Eb","F")).Single().Name);
-            AssertContains("(half-whole)",    Scales.FindFit(new Chord("C7(b9)")).Single().Name);
+            AssertContains("(half-whole)",    Scales.FindFit(Chord.FromNotes("C","Db","Eb","Fb","Gb","G","A","Bb")).Single().Name);
             AssertContains("Aeolian",         Scales.FindFit(Chord.FromNotes("F","G","Ab","Bb","C","Db","Eb")).Single().Name);
             AssertContains("Phrygian",        Scales.FindFit(Chord.FromNotes("F","Gb","Ab","Bb","C","Db","Eb")).Single().Name);
             AssertContains("half-diminished", Scales.FindFit(Chord.FromNotes("D","E","F","G","Ab","Bb","C")).Single().Name);
