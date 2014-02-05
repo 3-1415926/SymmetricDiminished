@@ -48,5 +48,38 @@ namespace TestScale
                 }
             }
         }
+
+        [TestMethod]
+        public void FindScaleName()
+        {
+            AssertContains("Ionian", Scales.FindFit(Chord.FromNotes("C", "D", "E", "F", "G", "A", "B")).Single().Name);
+            AssertContains("Dorian", Scales.FindFit(Chord.FromNotes("D", "E", "F", "G", "A", "B", "C")).Single().Name);
+            AssertContains("Phrygian", Scales.FindFit(Chord.FromNotes("E", "F", "G", "A", "B", "C", "D")).Single().Name);
+            AssertContains("Lydian", Scales.FindFit(Chord.FromNotes("F", "G", "A", "B", "C", "D", "E")).Single().Name);
+            AssertContains("Mixolydian", Scales.FindFit(Chord.FromNotes("G", "A", "B", "C", "D", "E", "F")).Single().Name);
+            AssertContains("Aeolian", Scales.FindFit(Chord.FromNotes("A", "B", "C", "D", "E", "F", "G")).Single().Name);
+            AssertContains("Locrian", Scales.FindFit(Chord.FromNotes("B", "C", "D", "E", "F", "G", "A")).Single().Name);
+
+            AssertContains("(I)", Scales.FindFit(Chord.FromNotes("C", "D", "Eb", "F", "G", "A", "B")).Single().Name);
+            AssertContains("(II)", Scales.FindFit(Chord.FromNotes("D", "Eb", "F", "G", "A", "B", "C")).Single().Name);
+            AssertContains("(III)", Scales.FindFit(Chord.FromNotes("Eb", "F", "G", "A", "B", "C", "D")).Single().Name);
+            AssertContains("(IV)", Scales.FindFit(Chord.FromNotes("F", "G", "A", "B", "C", "D", "Eb")).Single().Name);
+            AssertContains("(V)", Scales.FindFit(Chord.FromNotes("G", "A", "B", "C", "D", "Eb", "F")).Single().Name);
+            AssertContains("(VI)", Scales.FindFit(Chord.FromNotes("A", "B", "C", "D", "Eb", "F", "G")).Single().Name);
+            AssertContains("(VII)", Scales.FindFit(Chord.FromNotes("B", "C", "D", "Eb", "F", "G", "A")).Single().Name);
+
+            AssertContains("Locrian",         Scales.FindFit(Chord.FromNotes("G","Ab","Bb","C","Db","Eb","F")).Single().Name);
+            AssertContains("(half-whole)",    Scales.FindFit(new Chord("C7(b9)")).Single().Name);
+            AssertContains("Aeolian",         Scales.FindFit(Chord.FromNotes("F","G","Ab","Bb","C","Db","Eb")).Single().Name);
+            AssertContains("Phrygian",        Scales.FindFit(Chord.FromNotes("F","Gb","Ab","Bb","C","Db","Eb")).Single().Name);
+            AssertContains("half-diminished", Scales.FindFit(Chord.FromNotes("D","E","F","G","Ab","Bb","C")).Single().Name);
+            AssertContains("Dorian b2",       Scales.FindFit(Chord.FromNotes("C","Db","Eb","F","G","A","Bb")).Single().Name);
+            AssertContains("Mixolydian",      Scales.FindFit(Chord.FromNotes("Ab","Bb","C","Db","Eb","F","Gb")).Single().Name);
+        }
+
+        private void AssertContains(string substring, string actualString)
+        {
+            Assert.IsTrue(actualString.Contains(substring), "\"" + actualString + "\" does not contain \"" + substring + "\"");
+        }
     }
 }

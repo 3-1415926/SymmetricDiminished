@@ -43,7 +43,7 @@ namespace MusicScale
             + @")[)]?)*$"
         );
 
-        public readonly byte BaseNote;
+        public readonly Note BaseNote;
         public readonly ulong Mask;
 
         public static Chord FromNotes(params string[] notes)
@@ -57,16 +57,16 @@ namespace MusicScale
                     lastOffset += Common.OctaveLength;
                     continue;
                 }
-                int offset = Common.ParseNote(note);
+                int offset = (int)Common.ParseNote(note);
                 while (offset <= lastOffset)
                     offset += Common.OctaveLength;
                 mask |= Common.OneNoteMask(offset);
                 lastOffset = offset;
             }
-            return new Chord((byte)Common.ParseNote(notes.First()), mask);
+            return new Chord(Common.ParseNote(notes.First()), mask);
         }
 
-        private Chord(byte baseNote, ulong mask)
+        private Chord(Note baseNote, ulong mask)
         {
             BaseNote = baseNote;
             Mask = mask;
@@ -78,7 +78,7 @@ namespace MusicScale
             if (!match.Success)
                 throw new ArgumentException("Could not parse chord: " + notation);
 
-            BaseNote = (byte)Common.ModuloOctave(Common.NoteOffset[match.Groups["root"].Value.Single()]
+            BaseNote = (Note)Common.ModuloOctave(Common.NoteOffset[match.Groups["root"].Value.Single()]
                 + match.Groups["rootSharp"].Captures.Count
                 - match.Groups["rootFlat"].Captures.Count);
 
@@ -158,11 +158,11 @@ namespace MusicScale
                 previousInterval = i.Interval;
             }
 
-            Mask <<= BaseNote;
+            Mask <<= (int)BaseNote;
 
             foreach (var extraNote in extraNotes)
             {
-                Mask |= Common.OneNoteMask(Common.ParseNote(extraNote));
+                Mask |= Common.OneNoteMask((int)Common.ParseNote(extraNote));
             }
         }
 
@@ -193,7 +193,7 @@ namespace MusicScale
 
         public override string ToString()
         {
-            return Common.FormatMask(Mask);
+            return Common.FormatMask(Mask, (int)BaseNote);
         }
     }
 }

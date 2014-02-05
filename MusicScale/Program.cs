@@ -26,7 +26,7 @@ namespace MusicScale
                 var scales = Scales.FindFit(chord.Item1);
                 Console.WriteLine(chord.Item2 + (chord.Item3.Length != 0 ? " with " + string.Join(" ", chord.Item3) : ""));
                 foreach (var scale in scales)
-                    Console.WriteLine("  " + scale);
+                    Console.WriteLine("  " + Common.FormatMask(scale.Scale.Mask, (int)chord.Item1.BaseNote, Common.OctaveLength) + " " + scale.Name);
             }
             Console.WriteLine("Done!");
             Console.ReadLine();

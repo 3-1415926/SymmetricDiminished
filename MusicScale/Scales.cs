@@ -38,7 +38,7 @@ namespace MusicScale
             "Symmetric diminished (half-whole)    <excluded>",
         };
 
-        private static readonly Tuple<Scale[], string[]>[] ScalesNames;
+        private static readonly Tuple<Scale[], string[]>[] AllScalesNames;
 
         static Scales()
         {
@@ -53,7 +53,7 @@ namespace MusicScale
 
             All = Major.Concat(MelodicMinor).Concat(Diminished).ToArray();
 
-            ScalesNames = new[]
+            AllScalesNames = new[]
             {
                 Tuple.Create(Major, MajorNames),
                 Tuple.Create(MelodicMinor, MelodicMinorNames),
@@ -63,10 +63,20 @@ namespace MusicScale
 
         public static IEnumerable<NamedScale> FindFit(Chord chord)
         {
-            foreach (var pair in ScalesNames)
-                for (int i = 0; i < pair.Item1.Length; i++)
-                    if ((chord.Mask & ~pair.Item1[i].Mask) == 0)
-                        yield return new NamedScale(pair.Item1[i], null); 
+            foreach (var scalesNames in AllScalesNames)
+                for (int i = 0; i < scalesNames.Item1.Length; i++)
+                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0)
+                    {
+                        var mask = scalesNames.Item1[0].Mask;
+                        int k = 0;
+                        for (int j = 0; j < Common.ModuloOctave(i + (int)chord.BaseNote); j++)
+                        {
+                            if (mask % 2 != 0)
+                                k++;
+                            mask /= 2;
+                        }
+                        yield return new NamedScale(scalesNames.Item1[i], scalesNames.Item2[Common.Modulo(k, scalesNames.Item2.Length)]);
+                    }
         }
     }
 }

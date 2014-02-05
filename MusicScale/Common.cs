@@ -16,10 +16,15 @@ namespace MusicScale
 
         public static readonly Dictionary<char, int> NoteOffset = new Dictionary<char, int> { { 'C', 0 }, { 'D', 2 }, { 'E', 4 }, { 'F', 5 }, { 'G', 7 }, { 'A', 9 }, { 'B', 11 } };
 
-        public static int ModuloOctave(int semitones, int octaveLength = OctaveLength)
+        public static int ModuloOctave(int semitones)
         {
-            int result = semitones % octaveLength;
-            return result < 0 ? result + octaveLength : result;
+            return Modulo(semitones, OctaveLength);
+        }
+
+        public static int Modulo(int number, int @base)
+        {
+            int result = number % @base;
+            return result < 0 ? result + @base : result;
         }
 
         public static ulong ParseMask(string str)
@@ -42,10 +47,11 @@ namespace MusicScale
             return result;
         }
 
-        public static string FormatMask(ulong num, int length = int.MaxValue)
+        public static string FormatMask(ulong num, int offset = 0, int length = int.MaxValue)
         {
             const int divideOctaveAt = 5;
-            int count = 0;
+            int count = offset;
+            num >>= offset;
             var result = new StringBuilder();
             while (num != 0 && length > 0)
             {
@@ -64,7 +70,7 @@ namespace MusicScale
             return result.ToString();
         }
 
-        public static int ParseNote(string note)
+        public static Note ParseNote(string note)
         {
             int offset = NoteOffset[note[0]];
             for (int j = 1; j < note.Length; j++)
@@ -81,7 +87,7 @@ namespace MusicScale
                     default:
                         throw new ArgumentException("Could not parse note symbol: " + note);
                 }
-            return offset;
+            return (Note)offset;
         }
 
         public static ulong OneNoteMask(int noteOffset)

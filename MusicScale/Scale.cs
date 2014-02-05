@@ -54,7 +54,7 @@ namespace MusicScale
 
         public override string ToString()
         {
-            return Common.FormatMask(Mask, Common.OctaveLength);
+            return Common.FormatMask(Mask, 0, Common.OctaveLength);
         }
     }
 }
