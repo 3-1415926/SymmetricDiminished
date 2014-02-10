@@ -68,6 +68,16 @@ namespace MusicScale
             return note1.Semiintervals != note2.Semiintervals;
         }
 
+        public override bool Equals(object obj)
+        {
+            return (obj is NoteInOctave) && (this.Semiintervals == ((NoteInOctave)obj).Semiintervals);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Semiintervals.GetHashCode();
+        }
+
         public static NoteFabric CreateNoteFabric(Note note)
         {
             return octave => new NoteInOctave(note, octave);
