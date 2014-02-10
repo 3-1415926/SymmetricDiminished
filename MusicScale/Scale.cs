@@ -27,6 +27,19 @@ namespace MusicScale
             return new Scale(((Mask << semitones) | (Mask >> (Common.OctaveLength - semitones))) & Common.OctaveMask);
         }
 
+        public IEnumerable<Note> GetNotes()
+        {
+            foreach (var note in Enum.GetValues(typeof(Note)))
+            {
+                var notePosition = (byte)note;
+                var isEnabled = (this.Mask & (1UL << notePosition)) != 0;
+                if (isEnabled)
+                {
+                    yield return (Note)note;
+                }
+            }
+        }
+
         public override bool Equals(object obj)
         {
             return obj is Scale ? Equals((Scale)obj) : false;
