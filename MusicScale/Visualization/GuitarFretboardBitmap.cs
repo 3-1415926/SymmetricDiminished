@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 
 namespace MusicScale.Visualization
@@ -19,6 +20,8 @@ namespace MusicScale.Visualization
 
         private int height;
 
+        private double preciseZeroFretWidth;
+
         private Bitmap bitmap;
 
         private Guitar guitar;
@@ -29,27 +32,30 @@ namespace MusicScale.Visualization
             this.width = this.GetFretboardWidth();
             this.height = this.GetFretboardHeight();
             this.bitmap = new Bitmap(this.width, this.height);
+            this.preciseZeroFretWidth = this.GetPreciseZeroFretWidth();
         }
 
-        public void DrawFret()
+        public void DrawFretboard()
         {
+            var preciseZeroFretWidthInt = (int)this.preciseZeroFretWidth;
             var graphics = Graphics.FromImage(this.bitmap);
             graphics.FillRectangle(new SolidBrush(Color.White), 0, 0, this.width, this.height);
-            graphics.FillRectangle(new SolidBrush(Color.Beige), FretWidth, 0, this.width - FretWidth, this.height);
-            graphics.DrawRectangle(new Pen(Color.Black, 2), FretWidth, 0, this.width - FretWidth, this.height);
+            graphics.FillRectangle(new SolidBrush(Color.Beige), preciseZeroFretWidthInt, 0, this.width - preciseZeroFretWidthInt, this.height);
+            graphics.DrawRectangle(new Pen(Color.Black, 2), preciseZeroFretWidthInt, 0, this.width - preciseZeroFretWidthInt, this.height);
 
             var bordersPen = new Pen(Color.Black, 2);
             var stringsPen = new Pen(Color.Gray, StringsWidth);
 
             for (int i = 0; i < this.guitar.FretCount; i++)
             {
-                graphics.DrawLine(bordersPen, (i + 1) * FretWidth, 0, (i + 1) * FretWidth, this.height);
+                var fretX = (int)this.GetFretPosition(i);
+                graphics.DrawLine(bordersPen, fretX, 0, fretX, this.height);
             }
 
             for (int i = 0; i < this.guitar.StringsCount; i++)
             {
                 int y = this.GetStringY(i);
-                graphics.DrawLine(stringsPen, FretWidth, y, this.width, y);
+                graphics.DrawLine(stringsPen, preciseZeroFretWidthInt, y, this.width, y);
             }
 
             var fretHintBrush = new SolidBrush(Color.SandyBrown);
@@ -123,9 +129,52 @@ namespace MusicScale.Visualization
             }
         }
 
+        private double GetPreciseZeroFretWidth()
+        {
+
+            var multiplier = 0.0;
+            for (int i = 0; i <= this.guitar.FretCount; i++)
+            {
+                multiplier += Math.Pow(2, -i / 12.0);
+            }
+
+            return this.width / multiplier;
+        }
+
+        private int GetFretPosition(int fret)
+        {
+            if (fret > this.guitar.FretCount)
+            {
+                throw new ArgumentOutOfRangeException("fret");
+            }
+
+            if (fret == this.guitar.FretCount)
+            {
+                return this.width;
+            }
+
+            if (fret == 0)
+            {
+                return (int)this.preciseZeroFretWidth;
+            }
+
+            var multiplier = 0.0;
+            for (int i = 0; i <= fret; i++)
+            {
+                multiplier += Math.Pow(2, -i / 12.0);
+            }
+
+            return (int)(multiplier * this.preciseZeroFretWidth);
+        }
+
         private int GetFretMiddleX(int fret)
         {
-            return (FretWidth * fret) + (FretWidth / 2);
+            if (fret == 0)
+            {
+                return (int)this.preciseZeroFretWidth / 2;
+            }
+
+            return (this.GetFretPosition(fret) + this.GetFretPosition(fret - 1)) / 2;
         }
 
         private int GetStringY(int stringNum)
