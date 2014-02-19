@@ -34,6 +34,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,11 +46,15 @@
     <Compile Include="Common.cs" />
     <Compile Include="NamedScale.cs" />
     <Compile Include="Note.cs" />
+    <Compile Include="NoteInOctave.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Progression.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scale.cs" />
     <Compile Include="Scales.cs" />
+    <Compile Include="Visualization\Guitar.cs" />
+    <Compile Include="Visualization\GuitarFretboardBitmap.cs" />
+    <Compile Include="Visualization\KnownGuitarTunings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
