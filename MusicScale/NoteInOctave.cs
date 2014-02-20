@@ -14,7 +14,7 @@ namespace MusicScale
 
         public int Octave;
 
-        public int Semiintervals
+        public int Semitones
         {
             get
             {
@@ -35,47 +35,47 @@ namespace MusicScale
 
         public static int operator -(NoteInOctave note1, NoteInOctave note2)
         {
-            return note1.Semiintervals - note2.Semiintervals;
+            return note1.Semitones - note2.Semitones;
         }
 
         public static bool operator <(NoteInOctave note1, NoteInOctave note2)
         {
-            return note1.Semiintervals < note2.Semiintervals;
+            return note1.Semitones < note2.Semitones;
         }
 
         public static bool operator <=(NoteInOctave note1, NoteInOctave note2)
         {
-            return note1.Semiintervals <= note2.Semiintervals;
+            return note1.Semitones <= note2.Semitones;
         }
 
         public static bool operator >(NoteInOctave note1, NoteInOctave note2)
         {
-            return note1.Semiintervals > note2.Semiintervals;
+            return note1.Semitones > note2.Semitones;
         }
 
         public static bool operator >=(NoteInOctave note1, NoteInOctave note2)
         {
-            return note1.Semiintervals >= note2.Semiintervals;
+            return note1.Semitones >= note2.Semitones;
         }
 
         public static bool operator ==(NoteInOctave note1, NoteInOctave note2)
         {
-            return note1.Semiintervals == note2.Semiintervals;
+            return note1.Semitones == note2.Semitones;
         }
 
         public static bool operator !=(NoteInOctave note1, NoteInOctave note2)
         {
-            return note1.Semiintervals != note2.Semiintervals;
+            return note1.Semitones != note2.Semitones;
         }
 
         public override bool Equals(object obj)
         {
-            return (obj is NoteInOctave) && (this.Semiintervals == ((NoteInOctave)obj).Semiintervals);
+            return (obj is NoteInOctave) && (this.Semitones == ((NoteInOctave)obj).Semitones);
         }
 
         public override int GetHashCode()
         {
-            return this.Semiintervals.GetHashCode();
+            return this.Semitones.GetHashCode();
         }
 
         public static NoteFabric CreateNoteFabric(Note note)

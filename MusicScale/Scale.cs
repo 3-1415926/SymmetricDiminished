@@ -21,6 +21,16 @@ namespace MusicScale
             Mask = maskPattern;
         }
 
+        public static Scale FromNotes(IEnumerable<Note> notes)
+        {
+            ulong mask = 0;
+            foreach (var note in notes)
+            {
+                mask |= (1UL << (byte)note);
+            }
+            return new Scale(mask);
+        }
+
         public Scale Shift(int semitones)
         {
             semitones = Common.ModuloOctave(semitones);

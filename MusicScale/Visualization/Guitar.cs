@@ -11,7 +11,7 @@ namespace MusicScale.Visualization
 
         public IList<NoteInOctave> Tuning { get; private set; }
 
-        public Guitar(int stringsCount = 6, IEnumerable<NoteInOctave> tuning = null, int fretCount = 16)
+        public Guitar(int stringsCount = 6, IEnumerable<NoteInOctave> tuning = null, int fretCount = 20)
         {
             this.Tuning = tuning == null ? KnownGuitarTunings.Standard : tuning.ToList();
 
