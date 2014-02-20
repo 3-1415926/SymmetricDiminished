@@ -94,5 +94,14 @@ namespace MusicScale
         {
             return One << noteOffset;
         }
+
+        public static ulong NoteMaskInAllOctaves(int noteOffset)
+        {
+            noteOffset = ModuloOctave(noteOffset);
+            ulong result = 0;
+            for (ulong gen = One << noteOffset; gen != 0; gen <<= OctaveLength)
+                result |= gen;
+            return result;
+        }
     }
 }
