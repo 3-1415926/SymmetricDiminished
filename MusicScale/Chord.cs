@@ -45,6 +45,7 @@ namespace MusicScale
 
         public readonly Note BaseNote;
         public readonly ulong Mask;
+        public bool HasAlteredNotes;
 
         public static Chord FromNotes(params string[] notes)
         {
@@ -70,6 +71,7 @@ namespace MusicScale
         {
             BaseNote = baseNote;
             Mask = mask;
+            HasAlteredNotes = false;
         }
 
         public Chord(string notation, params string[] extraNotes)
@@ -96,6 +98,8 @@ namespace MusicScale
                     Flags = ic.Where(ig => ig.g != "interval").Select(ig => ig.g).ToArray(),
                 } into s
                 select s).ToList();
+
+            HasAlteredNotes = intervals.Any(i => i.Flags.Any());
 
             // Half dim notation contains an implied minor 7th, i.e. C0 = C07
             if (match.Groups["halfDim"].Success && !intervals.Any(i => i.Interval == 7))

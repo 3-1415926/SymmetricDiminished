@@ -15,7 +15,7 @@ namespace MusicScale
                 { "E-7", "A", "F#" }, { "G-7", "E", "C", "A" },
                 { "BbMaj7", "G" }, { "B-7b5", "E", "G" }, { "E7#9", "G", "F" }, 
                 { "A-7", "D" }, { "F#-7b5", "B", "D" },
-                { "F-7", "Bb", "G", "D", "Eb" }, "C-7", //{ "B7alt", "D" },
+                { "F-7", "Bb", "G", "D", "Eb" }, "C-7", "B7#5#9",
             };
             foreach (var chord in progression)
             {

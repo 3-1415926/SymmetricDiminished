@@ -95,18 +95,25 @@ namespace MusicScale
         {
             foreach (var scalesNames in AllScalesNames)
                 for (int i = 0; i < scalesNames.Item1.Length; i++)
-                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0)
-                    {
-                        var mask = scalesNames.Item1[0].Mask;
-                        int k = 0;
-                        for (int j = 0; j < Common.ModuloOctave(i + (int)chord.BaseNote); j++)
-                        {
-                            if (mask % 2 != 0)
-                                k++;
-                            mask /= 2;
-                        }
-                        yield return new NamedScale(scalesNames.Item1[i], scalesNames.Item2[Common.Modulo(k, scalesNames.Item2.Length)]);
-                    }
+                {
+                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0 ||
+                        chord.HasAlteredNotes && scalesNames.Item1 == MelodicMinor // special handling for implied natural 5th in Altered scale
+                            && (chord.Mask & ~Common.NoteMaskInAllOctaves((int)chord.BaseNote + 7) & ~scalesNames.Item1[i].Mask) == 0)
+                        yield return new NamedScale(scalesNames.Item1[i], FindName(chord.BaseNote, i, scalesNames.Item1, scalesNames.Item2));
+                }
+        }
+
+        public static string FindName(Note baseNote, int scaleIndex, Scale[] scales, string[] scaleNames)
+        {
+            var mask = scales[0].Mask;
+            int k = 0;
+            for (int j = 0; j < Common.ModuloOctave(scaleIndex + (int)baseNote); j++)
+            {
+                if (mask % 2 != 0)
+                    k++;
+                mask /= 2;
+            }
+            return scaleNames[Common.Modulo(k, scaleNames.Length)];
         }
     }
 }
