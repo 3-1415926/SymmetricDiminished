@@ -12,10 +12,10 @@ namespace MusicScale
         {
             var progression = new Progression
             { 
-                "Gmi7(b5)", "C7(b9)", "F-", 
-                { "Dmi7(b5)", "G" }, { "G7", "D#" }, "C6maj7",  
-                "Cmi7", "F7(b9)", "Bbmaj7",
-                "Ab7", { "G7", "Bb" },
+                { "E-7", "A", "F#" }, { "G-7", "E", "C", "A" },
+                { "BbMaj7", "G" }, { "B-7b5", "E", "G" }, { "E7#9", "G", "F" }, 
+                { "A-7", "D" }, { "F#-7b5", "B", "D" },
+                { "F-7", "Bb", "G", "D", "Eb" }, "C-7", //{ "B7alt", "D" },
             };
             foreach (var chord in progression)
             {
