@@ -26,24 +26,23 @@ namespace MusicScale
                 .ToDictionary(p => p.b, p => p.a);        
         }
 
-        //TODO: support bass notation as in Cmaj7/D
         static readonly Regex chordRegex = new Regex(@"(?n)^"
-            + @"(?<root>[A-G])"
-            + @"((?<rootSharp>[#♯])|(?<rootFlat>[b♭]))*"
-            + @"((?<minor>[-−]|m(in?)?)|(?<aug>\+|aug)|(?<dim>[o°]|dim)|(?<halfDim>[0øØ]))?"
-            + @"(?<major>[MΔ]|[Mm]aj|dom)??"
-            + @"(sus(?<susInt>[24]))?"
-            + @"([/(]?(?<intAdd>add)?("
-                + @"((?<intSharp>[+#♯ΔMj]|[Mm]aj)?" 
+            + @"(?<root>[A-G][#♯b♭]*)"
+            + @"((?<minor>[-−]|m(in?)?)|(?<aug>\+|aug)|(?<dim>[Oo°]|dim)|(?<halfDim>[0øØ]))?"
+            + @"(?<major>[MΔ]|[Mm]aj?|dom)??"
+            + @"([/(]?((?<intAdd>add)?("
+                + @"((?<intSharp>[+#♯♮ΔMj]|nat|[Mm]aj?)?" 
                     + @"(?<interval>" + string.Join("|", minorIntervals) + "))|"
-                + @"(((?<intSharp>[+#♯])|(?<intFlat>[-−b♭°])|(?<intPrevMaj>[ΔMj]|[Mm]aj))?" 
+                + @"(((?<intSharp>[+#♯])|(?<intFlat>[-−b♭°])|(?<intPrevMaj>[ΔMj]|[Mm]aj?))?" 
                     + @"(?<interval>" + string.Join("|", majorIntervals) + "))|"
-                + @"(((?<intSharp>[+#♯]|aug)|(?<intFlat>[-−b♭°]|dim)|(?<intPrevMaj>[ΔMj]|[Mm]aj))?" 
+                + @"(((?<intSharp>[+#♯]|aug)|(?<intFlat>[-−b♭°]|dim)|(?<intPrevMaj>[ΔMj]|[Mm]aj?))?" 
                     + @"(?<interval>" + string.Join("|", perfectIntervals) + "))"
-            + @")[)]?)*$"
+            + @")|(sus(?<susInt>[24]?)))[)]?)*?"
+            + @"(/(?<bass>[A-G][#♯b♭]*))?$"
         );
 
-        public readonly Note BaseNote;
+        public readonly Note Root;
+        public readonly Note Bass;
         public readonly ulong Mask;
         public bool HasAlteredNotes;
 
@@ -67,9 +66,10 @@ namespace MusicScale
             return new Chord(Common.ParseNote(notes.First()), mask);
         }
 
-        private Chord(Note baseNote, ulong mask)
+        private Chord(Note root, ulong mask)
         {
-            BaseNote = baseNote;
+            Root = root;
+            Bass = root;
             Mask = mask;
             HasAlteredNotes = false;
         }
@@ -80,9 +80,7 @@ namespace MusicScale
             if (!match.Success)
                 throw new ArgumentException("Could not parse chord: " + notation);
 
-            BaseNote = (Note)Common.ModuloOctave(Common.NoteOffset[match.Groups["root"].Value.Single()]
-                + match.Groups["rootSharp"].Captures.Count
-                - match.Groups["rootFlat"].Captures.Count);
+            Root = Common.ParseNote(match.Groups["root"].Value);
 
             int groupIndex = 0;
             var intervals = (
@@ -110,10 +108,12 @@ namespace MusicScale
             // Tonic
             Mask = Common.OneNoteMask(0);
 
-            //TODO: support sus without interval specifier (implied 4)
             // Third or sus2 or sus4
             if (match.Groups["susInt"].Success)
-                Mask |= Common.OneNoteMask(intervalToSemitones[int.Parse(match.Groups["susInt"].Value)]);
+            {
+                int susInterval = string.IsNullOrEmpty(match.Groups["susInt"].Value) ? 4 : int.Parse(match.Groups["susInt"].Value);
+                Mask |= Common.OneNoteMask(intervalToSemitones[susInterval]);
+            }
             else if (!intervals.Any(i => i.Interval == 5 && !i.Flags.Any(f => f != "add")))
             {
                 if (match.Groups["minor"].Success || match.Groups["dim"].Success || match.Groups["halfDim"].Success)
@@ -162,7 +162,16 @@ namespace MusicScale
                 previousInterval = i.Interval;
             }
 
-            Mask <<= (int)BaseNote;
+            Bass = Root;
+            if (match.Groups["bass"].Success)
+                Bass = Common.ParseNote(match.Groups["bass"].Value);
+
+            if (Root < Bass)
+                Root += Common.OctaveLength;
+
+            Mask <<= (int)Root;
+
+            Mask |= Common.OneNoteMask((int)Bass);
 
             foreach (var extraNote in extraNotes)
             {
@@ -177,7 +186,7 @@ namespace MusicScale
 
         public override int GetHashCode()
         {
-            return (Mask ^ ((ulong)BaseNote << (Common.MaskLength - 4))).GetHashCode();
+            return Mask.GetHashCode();
         }
 
         public bool Equals(Chord other)
@@ -187,7 +196,7 @@ namespace MusicScale
 
         public static bool operator ==(Chord a, Chord b)
         {
-            return a.Mask == b.Mask && a.BaseNote == b.BaseNote;
+            return a.Mask == b.Mask;
         }
 
         public static bool operator !=(Chord a, Chord b)
@@ -197,7 +206,7 @@ namespace MusicScale
 
         public override string ToString()
         {
-            return Common.FormatMask(Mask, (int)BaseNote);
+            return Common.FormatMask(Mask, (int)Bass);
         }
     }
 }

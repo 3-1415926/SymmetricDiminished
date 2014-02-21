@@ -23,7 +23,7 @@ namespace MusicScale
 
         private static readonly string[] MelodicMinorNames =
         {
-            "Ascending melodic minor (I)          <excluded>",
+            "Ascending melodic minor (I)          minor, not common",
             "Phrygian nat.6 (Dorian b2) (II)      <excluded>",
             "Lydian #5 (Lydian augmented) (III)   <excluded>",
             "Lydian b7 (Lydian dominant) (IV)     dominant 7",
@@ -56,8 +56,8 @@ namespace MusicScale
 
         private static readonly string[] DiminishedNames = 
         {
-            "Symmetric diminished (whole-half)    dominant 7",
-            "Symmetric diminished (half-whole)    <excluded>",
+            "Symmetric diminished (whole-half)    <excluded>",
+            "Symmetric diminished (half-whole)    dominant 7",
         };
 
         private static readonly Tuple<Scale[], string[]>[] AllScalesNames;
@@ -98,8 +98,8 @@ namespace MusicScale
                 {
                     if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0 ||
                         chord.HasAlteredNotes && scalesNames.Item1 == MelodicMinor // special handling for implied natural 5th in Altered scale
-                            && (chord.Mask & ~Common.NoteMaskInAllOctaves((int)chord.BaseNote + 7) & ~scalesNames.Item1[i].Mask) == 0)
-                        yield return new NamedScale(scalesNames.Item1[i], FindName(chord.BaseNote, i, scalesNames.Item1, scalesNames.Item2));
+                            && (chord.Mask & ~Common.NoteMaskInAllOctaves((int)chord.Root + 7) & ~scalesNames.Item1[i].Mask) == 0)
+                        yield return new NamedScale(scalesNames.Item1[i], FindName(chord.Root, i, scalesNames.Item1, scalesNames.Item2));
                 }
         }
 
