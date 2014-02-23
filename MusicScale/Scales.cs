@@ -32,6 +32,12 @@ namespace MusicScale
             "Altered (super Locrian) (VII)        dominant 7",
         };
 
+        private static readonly string[] DiminishedNames = 
+        {
+            "Symmetric diminished (whole-half)    <excluded>",
+            "Symmetric diminished (half-whole)    dominant 7",
+        };
+
         private static readonly string[] HarmonicMajorNames =
         {
             "Harmonic major (I)                   <excluded>",
@@ -54,13 +60,9 @@ namespace MusicScale
             "Ultralocrian (VII)                   <excluded>",
         };
 
-        private static readonly string[] DiminishedNames = 
-        {
-            "Symmetric diminished (whole-half)    <excluded>",
-            "Symmetric diminished (half-whole)    dominant 7",
-        };
-
         private static readonly Tuple<Scale[], string[]>[] AllScalesNames;
+
+        private static readonly Tuple<Scale[], string[]>[] NonHarmonicScalesNames;
 
         static Scales()
         {
@@ -70,34 +72,43 @@ namespace MusicScale
             var melodicMinorGenerator = new Scale(Common.ParseMask("10110,1010101"));
             MelodicMinor = Enumerable.Range(0, 12).Select(i => melodicMinorGenerator.Shift(-i)).ToArray();
 
+            var diminishedGenerator = new Scale(Common.ParseMask("101,101,101,101"));
+            Diminished = Enumerable.Range(0, 3).Select(i => diminishedGenerator.Shift(-i)).ToArray();
+
             var harmonicMajorGenerator = new Scale(Common.ParseMask("10101,1011001"));
             HarmonicMajor = Enumerable.Range(0, 12).Select(i => harmonicMajorGenerator.Shift(-i)).ToArray();
 
             var harmonicMinorGenerator = new Scale(Common.ParseMask("10110,1011001"));
             HarmonicMinor = Enumerable.Range(0, 12).Select(i => harmonicMinorGenerator.Shift(-i)).ToArray();
 
-            var diminishedGenerator = new Scale(Common.ParseMask("101,101,101,101"));
-            Diminished = Enumerable.Range(0, 3).Select(i => diminishedGenerator.Shift(-i)).ToArray();
-
-            All = Major.Concat(MelodicMinor).Concat(HarmonicMajor).Concat(HarmonicMinor).Concat(Diminished).ToArray();
+            All = Major.Concat(MelodicMinor).Concat(Diminished).Concat(HarmonicMajor).Concat(HarmonicMinor).ToArray();
 
             AllScalesNames = new[]
             {
                 Tuple.Create(Major, MajorNames),
                 Tuple.Create(MelodicMinor, MelodicMinorNames),
+                Tuple.Create(Diminished, DiminishedNames),
                 Tuple.Create(HarmonicMajor, HarmonicMajorNames),
                 Tuple.Create(HarmonicMinor, HarmonicMinorNames),
+            };
+
+            NonHarmonicScalesNames = new[]
+            {
+                Tuple.Create(Major, MajorNames),
+                Tuple.Create(MelodicMinor, MelodicMinorNames),
                 Tuple.Create(Diminished, DiminishedNames),
             };
         }
 
-        public static IEnumerable<NamedScale> FindFit(Chord chord)
+        public static IEnumerable<NamedScale> FindFit(Chord chord, bool includeHarmonic = false)
         {
-            foreach (var scalesNames in AllScalesNames)
+            const int alteredScaleShift = 11;
+            foreach (var scalesNames in includeHarmonic ? AllScalesNames : NonHarmonicScalesNames)
                 for (int i = 0; i < scalesNames.Item1.Length; i++)
                 {
-                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0 ||
-                        chord.HasAlteredNotes && scalesNames.Item1 == MelodicMinor // special handling for implied natural 5th in Altered scale
+                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0
+                        // special handling for implied natural 5th in Altered scale
+                        || scalesNames.Item1 == MelodicMinor && i == Common.ModuloOctave(alteredScaleShift - (int)chord.Root)
                             && (chord.Mask & ~Common.NoteMaskInAllOctaves((int)chord.Root + 7) & ~scalesNames.Item1[i].Mask) == 0)
                         yield return new NamedScale(scalesNames.Item1[i], FindName(chord.Root, i, scalesNames.Item1, scalesNames.Item2));
                 }

@@ -77,6 +77,13 @@ namespace TestScale
             AssertContains("Mixolydian",      Scales.FindFit(Chord.FromNotes("Ab","Bb","C","Db","Eb","F","Gb")).Single().Name);
         }
 
+        [TestMethod]
+        public void AlteredFitsWith5th()
+        {
+            AssertContains("Altered", string.Join("; ", Scales.FindFit(new Chord("A7")).Select(s => s.Name)));
+            AssertContains("Altered", string.Join("; ", Scales.FindFit(new Chord("Em/b9#9#11b13")).Select(s => s.Name)));
+        }
+
         private void AssertContains(string substring, string actualString)
         {
             Assert.IsTrue(actualString.Contains(substring), "\"" + actualString + "\" does not contain \"" + substring + "\"");
