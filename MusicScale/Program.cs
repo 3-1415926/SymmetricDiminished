@@ -30,12 +30,18 @@ namespace MusicScale
                 "Cma7/G", { "G7sus4", "E" }, "C", { "Bm7", "E" }, "Bb7",
             };
 
-            foreach (var chord in progression)
+            for (int i = 0; i < progression.Count; i++)
             {
-                var scales = Scales.FindFit(chord.Item1);
+                var chord = progression[i];
+                var scales = Scales.FindFit(chord.Item1, false, 
+                    progression[Common.Modulo(i - 1, progression.Count)].Item1, 
+                    progression[Common.Modulo(i + 1, progression.Count)].Item1);
                 Console.WriteLine(chord.Item2 + (chord.Item3.Length != 0 ? " with " + string.Join(" ", chord.Item3) : ""));
                 foreach (var scale in scales)
-                    Console.WriteLine("  " + Common.FormatMask(scale.Scale.Mask, (int)chord.Item1.Root, Common.OctaveLength) + " " + scale.Name);
+                    Console.WriteLine("  {0}   {1,-54}   {2}", 
+                        Common.FormatMask(scale.Scale.Mask, (int)chord.Item1.Root, Common.OctaveLength), 
+                        scale.Name,
+                        scale.FitsNeighborChords ? "Fits neighboring chords" : "");
             }
             Console.WriteLine("Done!");
             Console.ReadLine();

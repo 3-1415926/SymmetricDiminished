@@ -100,18 +100,40 @@ namespace MusicScale
             };
         }
 
-        public static IEnumerable<NamedScale> FindFit(Chord chord, bool includeHarmonic = false)
+        public static IEnumerable<NamedScale> FindFit(Chord chord, bool includeHarmonicScales = false, params Chord[] neighborChords)
         {
-            const int alteredScaleShift = 11;
-            foreach (var scalesNames in includeHarmonic ? AllScalesNames : NonHarmonicScalesNames)
+            var results = new List<NamedScale>();
+            foreach (var scalesNames in includeHarmonicScales ? AllScalesNames : NonHarmonicScalesNames)
+            {
                 for (int i = 0; i < scalesNames.Item1.Length; i++)
                 {
-                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0
-                        // special handling for implied natural 5th in Altered scale
-                        || scalesNames.Item1 == MelodicMinor && i == Common.ModuloOctave(alteredScaleShift - (int)chord.Root)
-                            && (chord.Mask & ~Common.NoteMaskInAllOctaves((int)chord.Root + 7) & ~scalesNames.Item1[i].Mask) == 0)
-                        yield return new NamedScale(scalesNames.Item1[i], FindName(chord.Root, i, scalesNames.Item1, scalesNames.Item2));
+                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0 || FitsAlteredWith5th(chord, scalesNames.Item1, i))
+                        results.Add(new NamedScale(scalesNames.Item1[i], FindName(chord.Root, i, scalesNames.Item1, scalesNames.Item2)));
                 }
+            }
+
+            var commonScaleMask = unchecked(0UL - 1);
+            foreach (var result in results)
+                commonScaleMask &= result.Scale.Mask;
+
+            ulong neighborChordsMask = 0;
+            foreach (var neighborChord in neighborChords)
+                neighborChordsMask |= Common.ChordInAllOctaves(neighborChord.Mask);
+
+            foreach (var result in results)
+            {
+                if ((result.Scale.Mask & ~commonScaleMask & ~neighborChordsMask) == 0)
+                    result.FitsNeighborChords = true;
+            }
+
+            return results;
+        }
+
+        private static bool FitsAlteredWith5th(Chord chord, Scale[] scales, int scaleIndex)
+        {
+            const int alteredScaleShift = 11;
+            return scales == MelodicMinor && scaleIndex == Common.ModuloOctave(alteredScaleShift - (int)chord.Root)
+                && (chord.Mask & ~Common.NoteMaskInAllOctaves((int)chord.Root + 7) & ~scales[scaleIndex].Mask) == 0;
         }
 
         public static string FindName(Note baseNote, int scaleIndex, Scale[] scales, string[] scaleNames)
