@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,38 +11,26 @@ namespace MusicScale
     {
         static void Main(string[] args)
         {
-            //// Lesson 03
-            //var progression = new Progression
-            //{ 
-            //    { "E-7", "A", "F#" }, { "G-7", "E", "C", "A" },
-            //    { "BbMaj7", "G" }, { "B-7b5", "E", "G" }, { "E7#9", "G", "F" }, 
-            //    { "A-7", "D" }, { "F#-7b5", "B", "D" },
-            //    { "F-7", "Bb", "G", "D", "Eb" }, "C-7", "B7#5#9",
-            //};
-
-            // Lesson 04
-            var progression = new Progression
+            if (args.Length != 1)
             {
-                { "Am", "B", "G" }, "Am(nat7)", { "Am7", "B" }, "Em7",
-                { "F", "B" }, { "F#o", "G" }, { "C/G", "A" }, { "G7sus4", "E", "F" }, { "C", "A" },
-                { "D/F#" }, { "Fma7", "D", "B" }, { "C/E", "B", "A" }, "Eb", "A7",
-                { "Ab", "G", "F" }, { "Fm7", "G" }, { "Bb7sus4", "G", "C" /*, "E" */ }, "Cma7",
-                { "Bm7", "E" }, { "Bb7", "E" }, { "Am", "D" }, { "Fm/Ab" }, { "G", "A" }, { "D7/F#" }, "Fma7",
-                "Cma7/G", { "G7sus4", "E" }, "C", { "Bm7", "E" }, "Bb7",
-            };
+                Console.WriteLine("Usage: MusicScale.exe <notation-file.txt>");
+                Console.WriteLine("    Notation file format:");
+                Console.WriteLine("        <chord>: <notes> | <chord>: notes | ...");
+                Console.WriteLine("    e.g.:");
+                Console.WriteLine("        Cm7: F G Bb D | Dmaj7: B C# | ...");
+                return;
+            }
 
+            var progression = Progression.Parse(File.ReadAllText(args[0]));
             for (int i = 0; i < progression.Count; i++)
             {
-                var chord = progression[i];
-                var scales = Scales.FindFit(chord.Item1, false, 
-                    progression[Common.Modulo(i - 1, progression.Count)].Item1, 
-                    progression[Common.Modulo(i + 1, progression.Count)].Item1);
-                Console.WriteLine(chord.Item2 + (chord.Item3.Length != 0 ? " with " + string.Join(" ", chord.Item3) : ""));
+                var scales = Scales.FindFit(progression, i, true);
+                Console.WriteLine(progression[i].Chord + (progression[i].MelodyNotes.Length != 0 ? " with " + string.Join(" ", progression[i].MelodyNotes) : ""));
                 foreach (var scale in scales)
                     Console.WriteLine("  {0}   {1,-54}   {2}", 
-                        Common.FormatMask(scale.Scale.Mask, (int)chord.Item1.Root, Common.OctaveLength), 
+                        Common.FormatMask(scale.Scale.Mask, (int)progression[i].Chord.Root, Common.OctaveLength), 
                         scale.Name,
-                        scale.FitsNeighborChords ? "Fits neighboring chords" : "");
+                        scale.FitReason);
             }
             Console.WriteLine("Done!");
             Console.ReadLine();

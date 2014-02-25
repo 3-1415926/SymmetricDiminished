@@ -6,11 +6,25 @@ using System.Threading.Tasks;
 
 namespace MusicScale
 {
-    class Progression : List<Tuple<Chord, string, string[]>>
+    public class Progression : List<ChordWithMelody>
     {
-        public void Add(string chordNotation, params string[] extraNotes)
+        private static readonly char chordSeparator = ':';
+        private static readonly char[] noteSeparators = new[] { ' ', ',', '\r', '\n', '\t' };
+        private static readonly char[] barSeparators = new[] { '|' };
+
+        public static Progression Parse(string notation)
         {
-            Add(Tuple.Create(new Chord(chordNotation, extraNotes), chordNotation, extraNotes));
+            var progression = new Progression();
+            var chordsWithMelody = notation.Split(barSeparators).Select(cwm => cwm.Trim()).Where(cwm => cwm != "").ToArray();
+            foreach (var chordWithMelody in chordsWithMelody)
+            {
+                int chordSeparatorIndex = chordWithMelody.IndexOf(chordSeparator);
+                var chord = new Chord((chordSeparatorIndex >= 0 ? chordWithMelody.Substring(0, chordSeparatorIndex) : chordWithMelody).Trim());
+                var melody = (chordSeparatorIndex >= 0 ? chordWithMelody.Substring(chordSeparatorIndex + 1) : "")
+                    .Split(noteSeparators, StringSplitOptions.RemoveEmptyEntries).Select(m => Common.ParseNote(m)).ToArray();
+                progression.Add(new ChordWithMelody(chord, melody));
+            }
+            return progression;
         }
     }
 }

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace MusicScale
 {
+    using Probe = Tuple<int, Func<ChordWithMelody, ulong>, string>;
+
     public static class Scales
     {
         public static readonly Scale[] Major, MelodicMinor, HarmonicMajor, HarmonicMinor, Diminished, All;
@@ -100,30 +102,57 @@ namespace MusicScale
             };
         }
 
-        public static IEnumerable<NamedScale> FindFit(Chord chord, bool includeHarmonicScales = false, params Chord[] neighborChords)
+        private static Probe[] probes = new[]
         {
-            var results = new List<NamedScale>();
+            new Probe(0, cwm => cwm.Chord.Mask,  "Chord as is"),
+            new Probe(0, cwm => cwm.MelodyMask,  "Melody as is"),
+            new Probe(-1, cwm => cwm.Chord.Mask, "Previous chord"),
+            new Probe(-1, cwm => cwm.MelodyMask, "Previous bar melody"),
+            new Probe(+1, cwm => cwm.Chord.Mask, "Next chord"),
+            new Probe(+1, cwm => cwm.MelodyMask, "Next bar melody"),
+            new Probe(-2, cwm => cwm.Chord.Mask, "2nd previous chord"),
+            new Probe(-2, cwm => cwm.MelodyMask, "2nd previous bar melody"),
+            new Probe(+2, cwm => cwm.Chord.Mask, "2nd next chord"),
+            new Probe(+2, cwm => cwm.Chord.Mask, "2nd next bar melody"),
+            new Probe(-3, cwm => cwm.MelodyMask, "3rd previous bar melody"),
+            new Probe(+3, cwm => cwm.MelodyMask, "3rd next bar melody"),
+        };
+
+        public static IEnumerable<NamedScale> FindFit(Chord chord, bool includeHarmonicScales = true)
+        {
             foreach (var scalesNames in includeHarmonicScales ? AllScalesNames : NonHarmonicScalesNames)
             {
                 for (int i = 0; i < scalesNames.Item1.Length; i++)
                 {
                     if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0 || FitsAlteredWith5th(chord, scalesNames.Item1, i))
-                        results.Add(new NamedScale(scalesNames.Item1[i], FindName(chord.Root, i, scalesNames.Item1, scalesNames.Item2)));
+                        yield return new NamedScale(scalesNames.Item1[i], FindName(chord.Root, i, scalesNames.Item1, scalesNames.Item2));
                 }
             }
+        }
+
+        public static IEnumerable<NamedScale> FindFit(Progression progression, int index, bool includeHarmonicScales)
+        {
+            var results = FindFit(progression[index].Chord, includeHarmonicScales).ToList();
 
             var commonScaleMask = unchecked(0UL - 1);
             foreach (var result in results)
                 commonScaleMask &= result.Scale.Mask;
 
-            ulong neighborChordsMask = 0;
-            foreach (var neighborChord in neighborChords)
-                neighborChordsMask |= Common.ChordInAllOctaves(neighborChord.Mask);
-
-            foreach (var result in results)
+            ulong probesMask = 0;
+            foreach (var probe in probes)
             {
-                if ((result.Scale.Mask & ~commonScaleMask & ~neighborChordsMask) == 0)
-                    result.FitsNeighborChords = true;
+                probesMask |= Common.ChordInAllOctaves(probe.Item2(progression[Common.ModuloOctave(index + probe.Item1)]));
+                bool foundFit = false;
+                foreach (var result in results)
+                {
+                    if ((result.Scale.Mask & ~commonScaleMask & ~probesMask) == 0)
+                    {
+                        result.FitReason = probe.Item3;
+                        foundFit = true;
+                    }
+                }
+                if (foundFit)
+                    break;
             }
 
             return results;
