@@ -82,6 +82,14 @@ namespace TestScale
             VerifyChord("Cbb-+11b5", "Cbb-Ebbb-Gbbb-Bbbb-Dbb-Fb");
             VerifyChord("B#dimb9add-13", "B#-D#-F#-A-C#-G#");
             VerifyChord("Fadd13", "F-A-C--D");
+            VerifyChord("A9sus4/G", "G-A-D-E-G-B");
+            VerifyChord("D0(nat7)/A", "A-D-F-Ab-C#");
+            VerifyChord("C/C", "C-E-G");
+            VerifyChord("Cbm9b5/C", "C-Cb-Ebb-Gbb-Bbb-Db");
+            VerifyChord("F9sus2add13/F#", "F#-F-G-C-Eb-G-D");
+            VerifyChord("Bsus9", "B-E-F#-A-C#");
+            VerifyChord("G7sus", "G-C-D-F");
+            VerifyChord("E5", "E-B");
         }
 
         [TestMethod]

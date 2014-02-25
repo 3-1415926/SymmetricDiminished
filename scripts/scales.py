@@ -4,7 +4,7 @@ import clr
 current_path = os.path.dirname(os.path.abspath(__file__))
 project_root_path = os.path.join(current_path, '..')
 clr.AddReferenceToFileAndPath(
-    os.path.join(project_root_path, r'MusicScale\bin\Debug\MusicScale.exe'))
+    os.path.join(project_root_path, 'MusicScale', 'bin', 'Debug', 'MusicScale.exe'))
 
 import MusicScale
 from MusicScale import Visualization

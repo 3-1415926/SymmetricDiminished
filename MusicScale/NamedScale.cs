@@ -10,6 +10,7 @@ namespace MusicScale
     {
         public readonly Scale Scale;
         public readonly string Name;
+        public bool FitsNeighborChords;
 
         public NamedScale(Scale scale, string name)
         {

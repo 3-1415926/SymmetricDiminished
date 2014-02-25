@@ -23,13 +23,19 @@ namespace MusicScale
 
         private static readonly string[] MelodicMinorNames =
         {
-            "Ascending melodic minor (I)          <excluded>",
+            "Ascending melodic minor (I)          minor, not common",
             "Phrygian nat.6 (Dorian b2) (II)      <excluded>",
             "Lydian #5 (Lydian augmented) (III)   <excluded>",
             "Lydian b7 (Lydian dominant) (IV)     dominant 7",
             "Mixolydian b6 (melodic major) (V)    <excluded>",
             "Locrian nat.2 (half-diminished) (VI) <excluded>",
             "Altered (super Locrian) (VII)        dominant 7",
+        };
+
+        private static readonly string[] DiminishedNames = 
+        {
+            "Symmetric diminished (whole-half)    <excluded>",
+            "Symmetric diminished (half-whole)    dominant 7",
         };
 
         private static readonly string[] HarmonicMajorNames =
@@ -54,13 +60,9 @@ namespace MusicScale
             "Ultralocrian (VII)                   <excluded>",
         };
 
-        private static readonly string[] DiminishedNames = 
-        {
-            "Symmetric diminished (whole-half)    dominant 7",
-            "Symmetric diminished (half-whole)    <excluded>",
-        };
-
         private static readonly Tuple<Scale[], string[]>[] AllScalesNames;
+
+        private static readonly Tuple<Scale[], string[]>[] NonHarmonicScalesNames;
 
         static Scales()
         {
@@ -70,43 +72,81 @@ namespace MusicScale
             var melodicMinorGenerator = new Scale(Common.ParseMask("10110,1010101"));
             MelodicMinor = Enumerable.Range(0, 12).Select(i => melodicMinorGenerator.Shift(-i)).ToArray();
 
+            var diminishedGenerator = new Scale(Common.ParseMask("101,101,101,101"));
+            Diminished = Enumerable.Range(0, 3).Select(i => diminishedGenerator.Shift(-i)).ToArray();
+
             var harmonicMajorGenerator = new Scale(Common.ParseMask("10101,1011001"));
             HarmonicMajor = Enumerable.Range(0, 12).Select(i => harmonicMajorGenerator.Shift(-i)).ToArray();
 
             var harmonicMinorGenerator = new Scale(Common.ParseMask("10110,1011001"));
             HarmonicMinor = Enumerable.Range(0, 12).Select(i => harmonicMinorGenerator.Shift(-i)).ToArray();
 
-            var diminishedGenerator = new Scale(Common.ParseMask("101,101,101,101"));
-            Diminished = Enumerable.Range(0, 3).Select(i => diminishedGenerator.Shift(-i)).ToArray();
-
-            All = Major.Concat(MelodicMinor).Concat(HarmonicMajor).Concat(HarmonicMinor).Concat(Diminished).ToArray();
+            All = Major.Concat(MelodicMinor).Concat(Diminished).Concat(HarmonicMajor).Concat(HarmonicMinor).ToArray();
 
             AllScalesNames = new[]
             {
                 Tuple.Create(Major, MajorNames),
                 Tuple.Create(MelodicMinor, MelodicMinorNames),
+                Tuple.Create(Diminished, DiminishedNames),
                 Tuple.Create(HarmonicMajor, HarmonicMajorNames),
                 Tuple.Create(HarmonicMinor, HarmonicMinorNames),
+            };
+
+            NonHarmonicScalesNames = new[]
+            {
+                Tuple.Create(Major, MajorNames),
+                Tuple.Create(MelodicMinor, MelodicMinorNames),
                 Tuple.Create(Diminished, DiminishedNames),
             };
         }
 
-        public static IEnumerable<NamedScale> FindFit(Chord chord)
+        public static IEnumerable<NamedScale> FindFit(Chord chord, bool includeHarmonicScales = false, params Chord[] neighborChords)
         {
-            foreach (var scalesNames in AllScalesNames)
+            var results = new List<NamedScale>();
+            foreach (var scalesNames in includeHarmonicScales ? AllScalesNames : NonHarmonicScalesNames)
+            {
                 for (int i = 0; i < scalesNames.Item1.Length; i++)
-                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0)
-                    {
-                        var mask = scalesNames.Item1[0].Mask;
-                        int k = 0;
-                        for (int j = 0; j < Common.ModuloOctave(i + (int)chord.BaseNote); j++)
-                        {
-                            if (mask % 2 != 0)
-                                k++;
-                            mask /= 2;
-                        }
-                        yield return new NamedScale(scalesNames.Item1[i], scalesNames.Item2[Common.Modulo(k, scalesNames.Item2.Length)]);
-                    }
+                {
+                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0 || FitsAlteredWith5th(chord, scalesNames.Item1, i))
+                        results.Add(new NamedScale(scalesNames.Item1[i], FindName(chord.Root, i, scalesNames.Item1, scalesNames.Item2)));
+                }
+            }
+
+            var commonScaleMask = unchecked(0UL - 1);
+            foreach (var result in results)
+                commonScaleMask &= result.Scale.Mask;
+
+            ulong neighborChordsMask = 0;
+            foreach (var neighborChord in neighborChords)
+                neighborChordsMask |= Common.ChordInAllOctaves(neighborChord.Mask);
+
+            foreach (var result in results)
+            {
+                if ((result.Scale.Mask & ~commonScaleMask & ~neighborChordsMask) == 0)
+                    result.FitsNeighborChords = true;
+            }
+
+            return results;
+        }
+
+        private static bool FitsAlteredWith5th(Chord chord, Scale[] scales, int scaleIndex)
+        {
+            const int alteredScaleShift = 11;
+            return scales == MelodicMinor && scaleIndex == Common.ModuloOctave(alteredScaleShift - (int)chord.Root)
+                && (chord.Mask & ~Common.NoteMaskInAllOctaves((int)chord.Root + 7) & ~scales[scaleIndex].Mask) == 0;
+        }
+
+        public static string FindName(Note baseNote, int scaleIndex, Scale[] scales, string[] scaleNames)
+        {
+            var mask = scales[0].Mask;
+            int k = 0;
+            for (int j = 0; j < Common.ModuloOctave(scaleIndex + (int)baseNote); j++)
+            {
+                if (mask % 2 != 0)
+                    k++;
+                mask /= 2;
+            }
+            return scaleNames[Common.Modulo(k, scaleNames.Length)];
         }
     }
 }
