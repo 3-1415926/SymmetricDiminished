@@ -19,10 +19,10 @@ namespace MusicScale
             foreach (var chordWithMelody in chordsWithMelody)
             {
                 int chordSeparatorIndex = chordWithMelody.IndexOf(chordSeparator);
-                var chord = new Chord((chordSeparatorIndex >= 0 ? chordWithMelody.Substring(0, chordSeparatorIndex) : chordWithMelody).Trim());
-                var melody = (chordSeparatorIndex >= 0 ? chordWithMelody.Substring(chordSeparatorIndex + 1) : "")
+                var chordNotation = (chordSeparatorIndex >= 0 ? chordWithMelody.Substring(0, chordSeparatorIndex) : chordWithMelody).Trim();
+                var melodyNotes = (chordSeparatorIndex >= 0 ? chordWithMelody.Substring(chordSeparatorIndex + 1) : "")
                     .Split(noteSeparators, StringSplitOptions.RemoveEmptyEntries).Select(m => Common.ParseNote(m)).ToArray();
-                progression.Add(new ChordWithMelody(chord, melody));
+                progression.Add(new ChordWithMelody(chordNotation, melodyNotes));
             }
             return progression;
         }

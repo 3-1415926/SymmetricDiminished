@@ -47,7 +47,7 @@ namespace MusicScale
             return result;
         }
 
-        public static string FormatMask(ulong num, int offset = 0, int length = int.MaxValue)
+        public static string FormatMask(ulong num, int offset = 0, int length = int.MaxValue, char noteChar = '1', char gapChar = '0', char? octaveSplit = ' ', char? midSplit = ',')
         {
             const int divideOctaveAt = 5;
             int count = offset;
@@ -55,15 +55,15 @@ namespace MusicScale
             var result = new StringBuilder();
             while (num != 0 && length > 0)
             {
-                result.Append(num & 1);
+                result.Append((num & 1) == 1 ? noteChar : gapChar);
                 num >>= 1;
                 count++;
                 if (num != 0)
                 {
-                    if (count % OctaveLength == 0)
-                        result.Append(" ");
-                    else if (count % OctaveLength == divideOctaveAt)
-                        result.Append(",");
+                    if (octaveSplit != null && count % OctaveLength == 0)
+                        result.Append(octaveSplit);
+                    else if (midSplit != null && count % OctaveLength == divideOctaveAt)
+                        result.Append(midSplit);
                 }
                 length--;
             }

@@ -102,21 +102,12 @@ namespace MusicScale
             };
         }
 
-        private static Probe[] probes = new[]
-        {
-            new Probe(0, cwm => cwm.Chord.Mask,  "Chord as is"),
-            new Probe(0, cwm => cwm.MelodyMask,  "Melody as is"),
-            new Probe(-1, cwm => cwm.Chord.Mask, "Previous chord"),
-            new Probe(-1, cwm => cwm.MelodyMask, "Previous bar melody"),
-            new Probe(+1, cwm => cwm.Chord.Mask, "Next chord"),
-            new Probe(+1, cwm => cwm.MelodyMask, "Next bar melody"),
-            new Probe(-2, cwm => cwm.Chord.Mask, "2nd previous chord"),
-            new Probe(-2, cwm => cwm.MelodyMask, "2nd previous bar melody"),
-            new Probe(+2, cwm => cwm.Chord.Mask, "2nd next chord"),
-            new Probe(+2, cwm => cwm.Chord.Mask, "2nd next bar melody"),
-            new Probe(-3, cwm => cwm.MelodyMask, "3rd previous bar melody"),
-            new Probe(+3, cwm => cwm.MelodyMask, "3rd next bar melody"),
-        };
+        private static Probe[] probes = 
+            new[] { 0 }.Concat(Enumerable.Range(1, 3).SelectMany(i => new[] { -i, i })).SelectMany(d => new[] 
+            { 
+                new Probe(d, cwm => cwm.Chord.Mask, "Chord " + d.ToString("+0;-0;0")),
+                new Probe(d, cwm => cwm.MelodyMask, "Melody " + d.ToString("+0;-0;0")),
+            }).ToArray();
 
         public static IEnumerable<NamedScale> FindFit(Chord chord, bool includeHarmonicScales = true)
         {
