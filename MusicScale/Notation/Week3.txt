@@ -1,0 +1,4 @@
+﻿E-7: B D A F#       | G-7: E C A F D             |
+BbMaj7: G F         | B-7b5: F E G | E7#9: G F E | 
+A-7: D C            | F#-7b5: C B D              |
+F-7: Bb Ab C G D Eb | C-7: C                     | B7#5#9: D |

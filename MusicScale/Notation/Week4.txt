@@ -1,0 +1,6 @@
+﻿Am: C B A G E        | Am(nat7): E C        | Am7: C B A G            | Em7: G E       |
+F: C B A  | F#o: A G | C/G: E C A           |  G7sus4: F E D C        | C: E A C       |
+D/F#: D A            | Fma7: D C B A        | C/E: C B A G            | Eb: G  | A7: G |
+Ab: G F C            | Fm7: F G C Eb        | Bb7sus4: F G C E        | Cma7: E        |
+Bm7: E B  | Bb7: E D | Am: D A C | Fm/Ab: C | G: B A D | D7/F#: D C A | Fma7: A C E    |
+Cma7/G: E C          | G7sus4: F E D C      | C: E                    | Bm7: E | Bb7   |
