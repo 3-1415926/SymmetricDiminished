@@ -22,7 +22,7 @@ namespace MusicScale
             }
 
             var progression = Progression.Parse(File.ReadAllText(args[0]));
-            //PrintScales(progression);
+            PrintScales(progression);
             PrintPatterns(progression);
 
             Console.WriteLine("Done!");
@@ -34,7 +34,10 @@ namespace MusicScale
             for (int i = 0; i < progression.Count; i++)
             {
                 var scales = Scales.FindFit(progression, i, false);
-                Console.WriteLine(progression[i].ChordNotation + (progression[i].MelodyNotes.Length != 0 ? " with " + string.Join(" ", progression[i].MelodyNotes) : ""));
+                Console.WriteLine("{0} ({1}){2}",
+                    progression[i].ChordNotation,
+                    progression[i].Chord.Quality,
+                    (progression[i].MelodyNotes.Length != 0 ? " with " + string.Join(" ", progression[i].MelodyNotes) : ""));
                 foreach (var scale in scales)
                     Console.WriteLine("  {0}   {1}   {2}",
                         Common.FormatMask(scale.Scale.Mask, (int)progression[i].Chord.Root, Common.OctaveLength),
@@ -64,19 +67,15 @@ namespace MusicScale
             string noteNames = string.Format("{0,-" + indent + "}  {1}", "", string.Concat(Enumerable.Range(0, 3).SelectMany(_ =>
                 Enumerable.Range(0, Common.OctaveLength).GroupJoin(Common.NoteOffset, o => o, i => i.Value, (o, ii) => ii.Any() ? ii.Single().Key : '.'))));
             Console.WriteLine(noteNames);
-            var defaultColor = Console.BackgroundColor;
             for (int i = 0; i <= progression.Count; i++)
             {
                 Console.Write("{0,-" + indent + "}  ", progression[i % progression.Count].ChordNotation);
                 var mask = Common.ChordInAllOctaves(progression[i % progression.Count].Chord.Mask);
                 for (int j = 0; j < Common.OctaveLength * 3; j++)
                 {
-                    Console.BackgroundColor = j % Common.OctaveLength == 0 ? ConsoleColor.DarkGreen : 
-                        j % Common.OctaveLength == 5 ? ConsoleColor.DarkBlue : defaultColor;
                     Console.Write(mask % 2 != 0 ? "*" : " ");
                     mask /= 2;
                 }
-                Console.BackgroundColor = defaultColor;
                 Console.WriteLine();
             }
             Console.WriteLine(noteNames);

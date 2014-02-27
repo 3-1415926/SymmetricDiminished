@@ -90,6 +90,8 @@ namespace TestScale
             VerifyChord("Bsus9", "B-E-F#-A-C#");
             VerifyChord("G7sus", "G-C-D-F");
             VerifyChord("E5", "E-B");
+            VerifyChord("F#o", "F#-A-C");
+            VerifyChord("Gb0", "Gb-Bbb-Dbb-Fb");
         }
 
         [TestMethod]
@@ -152,6 +154,25 @@ namespace TestScale
             VerifyChords(new[] { "C+M13", "Caugmaj13" }, "C-E-G♯-B-D-F-A");
             VerifyChords(new[] { "C+13", "Caug13", "C13♯5" }, "C-E-G♯-B♭-D-F-A");
             VerifyChords(new[] { "CØ13" }, "C-E♭-G♭-B♭-D-F-A");
+        }
+
+        [TestMethod]
+        public void ChordQuality()
+        {
+            VerifyQuality(Quality.Major, "C");
+            VerifyQuality(Quality.Major, "Fmaj7");
+            VerifyQuality(Quality.Major, "Bmaj9");
+            VerifyQuality(Quality.Minor, "Dbm");
+            VerifyQuality(Quality.Minor, "F#m11");
+            VerifyQuality(Quality.Dominant, "E0");
+            VerifyQuality(Quality.Dominant, "D#o");
+            VerifyQuality(Quality.Dominant, "Gb7");
+            VerifyQuality(Quality.Dominant, "A#13");
+        }
+
+        private void VerifyQuality(Quality expectedQuality, string chordNotation)
+        {
+            Assert.AreEqual(expectedQuality, new Chord(chordNotation).Quality, chordNotation);
         }
     }
 }

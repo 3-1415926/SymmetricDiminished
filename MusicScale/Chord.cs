@@ -44,6 +44,7 @@ namespace MusicScale
         public readonly Note Root;
         public readonly Note Bass;
         public readonly ulong Mask;
+        public readonly Quality Quality;
 
         public static Chord FromNotes(params string[] notes)
         {
@@ -70,6 +71,7 @@ namespace MusicScale
             Root = root;
             Bass = root;
             Mask = mask;
+            Quality = Quality.Undefined;
         }
 
         public Chord(string notation, params string[] extraNotes)
@@ -79,6 +81,7 @@ namespace MusicScale
                 throw new ArgumentException("Could not parse chord: " + notation);
 
             Root = Common.ParseNote(match.Groups["root"].Value);
+            Quality = Quality.Undefined;
 
             int groupIndex = 0;
             var intervals = (
@@ -113,9 +116,16 @@ namespace MusicScale
             else if (!intervals.Any(i => i.Interval == 5 && !i.Flags.Any(f => f != "add")))
             {
                 if (match.Groups["minor"].Success || match.Groups["dim"].Success || match.Groups["halfDim"].Success)
+                {
                     Mask |= Common.OneNoteMask(3);
+                    if (match.Groups["minor"].Success)
+                        Quality = Quality.Minor;
+                }
                 else
+                {
                     Mask |= Common.OneNoteMask(4);
+                    Quality = Quality.Major;
+                }
             }
 
             // Fifth
@@ -128,6 +138,7 @@ namespace MusicScale
 
             // Additional intervals
             int previousInterval = 0;
+            bool foundMinor7th = false;
             foreach (var i in intervals)
             {
                 if (i.Interval == 5)
@@ -151,12 +162,20 @@ namespace MusicScale
                                 impliedSemitones--;
                             if (i.Flags.Contains("intPrevMaj"))
                                 impliedSemitones++;
-                        }
+                            if (impliedSemitones < Common.NoteOffset.Last().Value)
+                                foundMinor7th = true;                        }
                         Mask |= Common.OneNoteMask(impliedSemitones);
                     }
 
+                if (i.Interval == 7 && semitones < Common.NoteOffset.Last().Value)
+                    foundMinor7th = true;
+
                 previousInterval = i.Interval;
             }
+
+            if (foundMinor7th && (Quality == Quality.Major || match.Groups["susInt"].Success
+                || match.Groups["dim"].Success || match.Groups["haldDim"].Success))
+                Quality = Quality.Dominant;
 
             Bass = Root;
             if (match.Groups["bass"].Success)

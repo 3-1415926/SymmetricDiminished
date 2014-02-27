@@ -123,7 +123,9 @@ namespace MusicScale
 
         public static IEnumerable<NamedScale> FindFit(Progression progression, int index, bool includeHarmonicScales)
         {
-            var results = FindFit(progression[index].Chord, includeHarmonicScales).ToList();
+            var allResults = FindFit(progression[index].Chord, includeHarmonicScales).ToList();
+            var results = allResults.Where(scale => scale.Info.IsCommon);
+               // && (progression[index].Chord.Quality == Quality.Undefined ? true : progression[index].Chord.Quality == scale.Info.Quality));
 
             var commonScaleMask = unchecked(0UL - 1);
             foreach (var result in results)

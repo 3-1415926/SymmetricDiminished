@@ -33,7 +33,7 @@ namespace MusicScale
 
         public override string ToString()
         {
-            return string.Format("{0,-" + MaxNameLength + "} {2,-8} {1,-9} from {4,-19} at {5} {3,-8}",
+            return string.Format("{0,-" + MaxNameLength + "} {2,-8} {1,-9}",// from {4,-19} at {5} {3,-8}",
                 Name, 
                 Quality != Quality.Undefined ? Quality.ToString() : "", 
                 Brightness != Brightness.Undefined ? Brightness.ToString() : "", 
