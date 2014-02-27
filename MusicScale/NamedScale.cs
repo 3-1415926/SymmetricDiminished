@@ -9,18 +9,18 @@ namespace MusicScale
     public class NamedScale
     {
         public readonly Scale Scale;
-        public readonly string Name;
+        public readonly ScaleInfo Info;
         public string FitReason;
 
-        public NamedScale(Scale scale, string name)
+        public NamedScale(Scale scale, ScaleInfo info)
         {
             this.Scale = scale;
-            this.Name = name;
+            this.Info = info;
         }
 
         public override string ToString()
         {
-            return Scale.ToString() + "   " + Name;
+            return Scale.ToString() + "   " + Info;
         }
     }
 }

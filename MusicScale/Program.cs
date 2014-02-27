@@ -22,7 +22,7 @@ namespace MusicScale
             }
 
             var progression = Progression.Parse(File.ReadAllText(args[0]));
-            //PrintScales(progression);
+            PrintScales(progression);
             PrintPatterns(progression);
 
             Console.WriteLine("Done!");
@@ -36,9 +36,9 @@ namespace MusicScale
                 var scales = Scales.FindFit(progression, i, false);
                 Console.WriteLine(progression[i].ChordNotation + (progression[i].MelodyNotes.Length != 0 ? " with " + string.Join(" ", progression[i].MelodyNotes) : ""));
                 foreach (var scale in scales)
-                    Console.WriteLine("  {0}   {1,-54}   {2}",
+                    Console.WriteLine("  {0}   {1}   {2}",
                         Common.FormatMask(scale.Scale.Mask, (int)progression[i].Chord.Root, Common.OctaveLength),
-                        scale.Name,
+                        scale.Info,
                         scale.FitReason);
             }
             Console.WriteLine(Environment.NewLine + Environment.NewLine);

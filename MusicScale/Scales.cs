@@ -12,59 +12,59 @@ namespace MusicScale
     {
         public static readonly Scale[] Major, MelodicMinor, HarmonicMajor, HarmonicMinor, Diminished, All;
 
-        private static readonly string[] MajorNames = 
+        private static readonly ScaleInfo[] MajorNames = 
         { 
-            "Ionian (I)                           major, normal", 
-            "Dorian (II)                          minor, brighter",
-            "Phrygian (III)                       minor, darker",
-            "Lydian (IV)                          major, brighter",
-            "Mixolydian (V)                       dominant 7",
-            "Aeolian (VI)                         minor, normal",
-            "Locrian (VII)                        minor, darkest",
+            new ScaleInfo("Ionian",     ScaleOrigin.CommonMajor, 1, true, Quality.Major,    Brightness.Normal  ),
+            new ScaleInfo("Dorian",     ScaleOrigin.CommonMajor, 2, true, Quality.Minor,    Brightness.Brighter),
+            new ScaleInfo("Phrygian",   ScaleOrigin.CommonMajor, 3, true, Quality.Minor,    Brightness.Darker  ),
+            new ScaleInfo("Lydian",     ScaleOrigin.CommonMajor, 4, true, Quality.Major,    Brightness.Brighter),
+            new ScaleInfo("Mixolydian", ScaleOrigin.CommonMajor, 5, true, Quality.Dominant  ),
+            new ScaleInfo("Aeolian",    ScaleOrigin.CommonMajor, 6, true, Quality.Minor,    Brightness.Normal  ),
+            new ScaleInfo("Locrian",    ScaleOrigin.CommonMajor, 7, true, Quality.Minor,    Brightness.Darkest ),
         };
 
-        private static readonly string[] MelodicMinorNames =
+        private static readonly ScaleInfo[] MelodicMinorNames =
         {
-            "Ascending melodic minor (I)          minor, not common",
-            "Phrygian nat.6 (Dorian b2) (II)      <excluded>",
-            "Lydian #5 (Lydian augmented) (III)   <excluded>",
-            "Lydian b7 (Lydian dominant) (IV)     dominant 7",
-            "Mixolydian b6 (melodic major) (V)    <excluded>",
-            "Locrian nat.2 (half-diminished) (VI) <excluded>",
-            "Altered (super Locrian) (VII)        dominant 7",
+            new ScaleInfo("Ascending melodic minor",         ScaleOrigin.MelodicMinor, 1, true, Quality.Minor),
+            new ScaleInfo("Phrygian nat.6 (Dorian b2)",      ScaleOrigin.MelodicMinor, 2),
+            new ScaleInfo("Lydian #5 (Lydian augmented)",    ScaleOrigin.MelodicMinor, 3),
+            new ScaleInfo("Lydian b7 (Lydian dominant)",     ScaleOrigin.MelodicMinor, 4, true, Quality.Dominant),
+            new ScaleInfo("Mixolydian b6 (melodic major)",   ScaleOrigin.MelodicMinor, 5),
+            new ScaleInfo("Locrian nat.2 (half-diminished)", ScaleOrigin.MelodicMinor, 6),
+            new ScaleInfo("Altered (super Locrian)",         ScaleOrigin.MelodicMinor, 7, true, Quality.Dominant),
         };
 
-        private static readonly string[] DiminishedNames = 
+        private static readonly ScaleInfo[] DiminishedNames = 
         {
-            "Symmetric diminished (whole-half)    <excluded>",
-            "Symmetric diminished (half-whole)    dominant 7",
+            new ScaleInfo("Symmetric diminished (whole-half)", ScaleOrigin.SymmetricDiminished, 1),
+            new ScaleInfo("Symmetric diminished (half-whole)", ScaleOrigin.SymmetricDiminished, 2, true, Quality.Dominant),
         };
 
-        private static readonly string[] HarmonicMajorNames =
+        private static readonly ScaleInfo[] HarmonicMajorNames =
         {
-            "Harmonic major (I)                   <excluded>",
-            "Dorian b5 (II)                       <excluded>",
-            "Phrygian b4 (III)                    <excluded>",
-            "Lydian b3 (IV)                       <excluded>",
-            "Mixolydian b2 (V)                    <excluded>",
-            "Lydian #2 #5 (VI)                    <excluded>",
-            "Locrian diminished (VII)             <excluded>",
+            new ScaleInfo("Harmonic major",     ScaleOrigin.HarmonicMajor, 1),
+            new ScaleInfo("Dorian b5",          ScaleOrigin.HarmonicMajor, 2),
+            new ScaleInfo("Phrygian b4",        ScaleOrigin.HarmonicMajor, 3),
+            new ScaleInfo("Lydian b3",          ScaleOrigin.HarmonicMajor, 4),
+            new ScaleInfo("Mixolydian b2",      ScaleOrigin.HarmonicMajor, 5),
+            new ScaleInfo("Lydian #2 #5",       ScaleOrigin.HarmonicMajor, 6),
+            new ScaleInfo("Locrian diminished", ScaleOrigin.HarmonicMajor, 7),
         };
 
-        private static readonly string[] HarmonicMinorNames =
+        private static readonly ScaleInfo[] HarmonicMinorNames =
         {
-            "Harmonic minor (I)                   <excluded>",
-            "Locrian #6 (II)                      <excluded>",
-            "Ionian aug (III)                     <excluded>",
-            "Romanian (IV)                        <excluded>",
-            "Phrygian dominant (V)                <excluded>",
-            "Lydian #2 (VI)                       <excluded>",
-            "Ultralocrian (VII)                   <excluded>",
+            new ScaleInfo("Harmonic minor",    ScaleOrigin.HarmonicMinor, 1),
+            new ScaleInfo("Locrian #6",        ScaleOrigin.HarmonicMinor, 2),
+            new ScaleInfo("Ionian aug",        ScaleOrigin.HarmonicMinor, 3),
+            new ScaleInfo("Romanian",          ScaleOrigin.HarmonicMinor, 4),
+            new ScaleInfo("Phrygian dominant", ScaleOrigin.HarmonicMinor, 5),
+            new ScaleInfo("Lydian #2",         ScaleOrigin.HarmonicMinor, 6),
+            new ScaleInfo("Ultralocrian",      ScaleOrigin.HarmonicMinor, 7),
         };
 
-        private static readonly Tuple<Scale[], string[]>[] AllScalesNames;
+        private static readonly Tuple<Scale[], ScaleInfo[]>[] AllScalesInfos;
 
-        private static readonly Tuple<Scale[], string[]>[] NonHarmonicScalesNames;
+        private static readonly Tuple<Scale[], ScaleInfo[]>[] NonHarmonicScalesInfos;
 
         static Scales()
         {
@@ -85,7 +85,7 @@ namespace MusicScale
 
             All = Major.Concat(MelodicMinor).Concat(Diminished).Concat(HarmonicMajor).Concat(HarmonicMinor).ToArray();
 
-            AllScalesNames = new[]
+            AllScalesInfos = new[]
             {
                 Tuple.Create(Major, MajorNames),
                 Tuple.Create(MelodicMinor, MelodicMinorNames),
@@ -94,7 +94,7 @@ namespace MusicScale
                 Tuple.Create(HarmonicMinor, HarmonicMinorNames),
             };
 
-            NonHarmonicScalesNames = new[]
+            NonHarmonicScalesInfos = new[]
             {
                 Tuple.Create(Major, MajorNames),
                 Tuple.Create(MelodicMinor, MelodicMinorNames),
@@ -111,12 +111,12 @@ namespace MusicScale
 
         public static IEnumerable<NamedScale> FindFit(Chord chord, bool includeHarmonicScales = true)
         {
-            foreach (var scalesNames in includeHarmonicScales ? AllScalesNames : NonHarmonicScalesNames)
+            foreach (var scalesInfos in includeHarmonicScales ? AllScalesInfos : NonHarmonicScalesInfos)
             {
-                for (int i = 0; i < scalesNames.Item1.Length; i++)
+                for (int i = 0; i < scalesInfos.Item1.Length; i++)
                 {
-                    if ((chord.Mask & ~scalesNames.Item1[i].Mask) == 0 || FitsAlteredWith5th(chord, scalesNames.Item1, i))
-                        yield return new NamedScale(scalesNames.Item1[i], FindName(chord.Root, i, scalesNames.Item1, scalesNames.Item2));
+                    if ((chord.Mask & ~scalesInfos.Item1[i].Mask) == 0 || FitsAlteredWith5th(chord, scalesInfos.Item1, i))
+                        yield return new NamedScale(scalesInfos.Item1[i], FindInfo(chord.Root, i, scalesInfos.Item1, scalesInfos.Item2));
                 }
             }
         }
@@ -156,7 +156,7 @@ namespace MusicScale
                 && (chord.Mask & ~Common.NoteMaskInAllOctaves((int)chord.Root + 7) & ~scales[scaleIndex].Mask) == 0;
         }
 
-        public static string FindName(Note baseNote, int scaleIndex, Scale[] scales, string[] scaleNames)
+        public static ScaleInfo FindInfo(Note baseNote, int scaleIndex, Scale[] scales, ScaleInfo[] scaleInfos)
         {
             var mask = scales[0].Mask;
             int k = 0;
@@ -166,7 +166,7 @@ namespace MusicScale
                     k++;
                 mask /= 2;
             }
-            return scaleNames[Common.Modulo(k, scaleNames.Length)];
+            return scaleInfos[Common.Modulo(k, scaleInfos.Length)];
         }
     }
 }
