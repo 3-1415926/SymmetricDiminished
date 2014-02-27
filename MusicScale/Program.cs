@@ -22,7 +22,7 @@ namespace MusicScale
             }
 
             var progression = Progression.Parse(File.ReadAllText(args[0]));
-            PrintScales(progression);
+            //PrintScales(progression);
             PrintPatterns(progression);
 
             Console.WriteLine("Done!");
@@ -61,11 +61,25 @@ namespace MusicScale
                 indent = Math.Max(indent, progression[i % progression.Count].ChordNotation.Length);
             }
 
+            string noteNames = string.Format("{0,-" + indent + "}  {1}", "", string.Concat(Enumerable.Range(0, 3).SelectMany(_ =>
+                Enumerable.Range(0, Common.OctaveLength).GroupJoin(Common.NoteOffset, o => o, i => i.Value, (o, ii) => ii.Any() ? ii.Single().Key : '.'))));
+            Console.WriteLine(noteNames);
+            var defaultColor = Console.BackgroundColor;
             for (int i = 0; i <= progression.Count; i++)
             {
-                Console.WriteLine("{0,-" + indent + "}  {1}", progression[i % progression.Count].ChordNotation, 
-                    Common.FormatMask(Common.ChordInAllOctaves(progression[i % progression.Count].Chord.Mask), length: Common.OctaveLength * 3, noteChar: '*', gapChar: ' ', octaveSplit: null, midSplit: null));
+                Console.Write("{0,-" + indent + "}  ", progression[i % progression.Count].ChordNotation);
+                var mask = Common.ChordInAllOctaves(progression[i % progression.Count].Chord.Mask);
+                for (int j = 0; j < Common.OctaveLength * 3; j++)
+                {
+                    Console.BackgroundColor = j % Common.OctaveLength == 0 ? ConsoleColor.DarkGreen : 
+                        j % Common.OctaveLength == 5 ? ConsoleColor.DarkBlue : defaultColor;
+                    Console.Write(mask % 2 != 0 ? "*" : " ");
+                    mask /= 2;
+                }
+                Console.BackgroundColor = defaultColor;
+                Console.WriteLine();
             }
+            Console.WriteLine(noteNames);
             Console.WriteLine(Environment.NewLine + Environment.NewLine);
         }
     }
