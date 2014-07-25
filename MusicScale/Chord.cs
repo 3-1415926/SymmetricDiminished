@@ -174,7 +174,7 @@ namespace MusicScale
             }
 
             if (foundMinor7th && (Quality == Quality.Major || match.Groups["susInt"].Success
-                || match.Groups["dim"].Success || match.Groups["haldDim"].Success))
+                || match.Groups["halfDim"].Success) || match.Groups["dim"].Success)
                 Quality = Quality.Dominant;
 
             Bass = Root;
