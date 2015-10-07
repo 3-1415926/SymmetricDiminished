@@ -1,0 +1,13 @@
+F6: G E D | G9: G E D |
+Gm7: F D C | C7: E D Bb |
+FMaj7: C | Gb7: C |
+F6: G E D | G13: G E D |
+Gm7: F D C | C7: E D Bb | FMaj6: C |
+F#Maj7: F F# D# | B7: C# D# |
+F#m9: G# A F# | D9: E F# |
+Gm7: A Bb G | Eb9: F G A Bb |
+Am7: C D E F G | D7: G# A |
+Gm7: Bb C D E F | C7: F# |
+F6: G E D | G7: G E D |
+Gm7: A F D C | C7: C E D |
+FMaj7: C | Gb9: C |
