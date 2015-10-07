@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MusicScale
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
@@ -26,25 +26,133 @@ namespace MusicScale
             PrintPatterns(progression);
 
             Console.WriteLine("Done!");
-            Console.ReadLine();
+        }
+
+        public static IEnumerable<NamedScale> GetBestScalePath(Progression progression)
+        {
+            var scalesProgression = Scales.FindFit(progression, false).ToList();
+            var bestScalePaths = GetPathIdMapping(Scales.FindBestScalePaths(scalesProgression));
+            
+            return scalesProgression.Select((scales, i) => 
+                    scales.Select((scale, j) => {
+                        var key = Tuple.Create(i, j);
+                        List<int> pathIds;
+                        var rank = 0;
+                        if (bestScalePaths.TryGetValue(key, out pathIds))
+                        {
+                        rank = pathIds.Count;
+                        }
+
+                        return Tuple.Create(rank, scale);
+                        }).OrderByDescending(x => x.Item1).Select(x => x.Item2).First()
+                    );
         }
 
         private static void PrintScales(Progression progression)
         {
-            for (int i = 0; i < progression.Count; i++)
+            var scalesProgression = Scales.FindFit(progression, false).ToList();
+            var bestScalePaths = GetPathIdMapping(Scales.FindBestScalePaths(scalesProgression));
+            var progressionWithScales = progression.Zip(scalesProgression, (c, scales) => new { ChordWithMelody = c, Scales = scales });
+
+            Console.OutputEncoding = System.Text.Encoding.Unicode;
+
+            int i = 0;
+            foreach (var chordWithMelodyAndScales in progressionWithScales)
             {
-                var scales = Scales.FindFit(progression, i, false);
+                var chordWithMelody = chordWithMelodyAndScales.ChordWithMelody;
+
                 Console.WriteLine("{0} ({1}){2}",
-                    progression[i].ChordNotation,
-                    progression[i].Chord.Quality,
-                    (progression[i].MelodyNotes.Length != 0 ? " with " + string.Join(" ", progression[i].MelodyNotes) : ""));
-                foreach (var scale in scales)
-                    Console.WriteLine("  {0}   {1}   {2}",
-                        Common.FormatMask(scale.Scale.Mask, (int)progression[i].Chord.Root, Common.OctaveLength),
+                    chordWithMelody.ChordNotation,
+                    chordWithMelody.Chord.Quality,
+                    (chordWithMelody.MelodyNotes.Length != 0 ? " with " + string.Join(" ", chordWithMelody.MelodyNotes) : ""));
+
+                int scaleIndex = 0;
+                foreach (var scale in chordWithMelodyAndScales.Scales)
+                {
+                    Action printPathId = () => {};
+                    List<int> pathIds = null;
+                    bestScalePaths.TryGetValue(Tuple.Create(i, scaleIndex), out pathIds);
+
+                    Console.Write("  {0} ", Common.FormatMask(scale.Scale.Mask, 0, Common.OctaveLength));
+
+                    // Another way to print the scale is to start from the root (harder to see the difference between scales):
+                    ////Console.Write("  {0} ", Common.FormatMask(scale.Scale.Mask, (int)progression[i].Chord.Root, Common.OctaveLength));
+
+                    PrintPathIds(pathIds);
+                    Console.WriteLine(" {0}   {1}",
                         scale.Info,
                         scale.FitReason);
+                    scaleIndex++;
+                }
+                i++;
             }
             Console.WriteLine(Environment.NewLine + Environment.NewLine);
+        }
+
+        private static void PrintPathIds(List<int> pathIds)
+        {
+            var maxWidth = PathIdToConsoleColorMapping.Count;
+            var pathIdsCount = pathIds == null ? 0 : pathIds.Count;
+
+            for (int i = 0; i < maxWidth; i++)
+            {
+                if (i < pathIdsCount)
+                {
+                    var pathId = pathIds[i];
+                    ConsoleColor color;
+                    if (!PathIdToConsoleColorMapping.TryGetValue(pathId, out color))
+                    {
+                        Console.Write(' ');
+                        continue;
+                    }
+
+                    Console.ForegroundColor = color;
+                    Console.Write('★');
+                    Console.ResetColor();
+
+                }
+                else
+                {
+                    Console.Write(' ');
+                }
+            }
+        }
+
+        private static readonly Dictionary<int, ConsoleColor> PathIdToConsoleColorMapping = new Dictionary<int, ConsoleColor>
+            {
+                {0, ConsoleColor.Green},
+                {1, ConsoleColor.Yellow},
+                {2, ConsoleColor.Blue},
+                {3, ConsoleColor.Cyan},
+                {4, ConsoleColor.Magenta},
+                {5, ConsoleColor.Gray},
+            };
+
+        private static IDictionary<Tuple<int, int>, List<int>> GetPathIdMapping(IEnumerable<IEnumerable<int>> bestPaths)
+        {
+            var result = new Dictionary<Tuple<int, int>, List<int>>();
+            int pathId = 0;
+            foreach (var path in bestPaths)
+            {
+                int i = 0;
+                foreach (var scaleIndex in path)
+                {
+                    var key = Tuple.Create(i, scaleIndex);
+                    List<int> pathIds = null;
+                    if (!result.TryGetValue(key, out pathIds))
+                    {
+                        pathIds = new List<int>();
+                        result[key] = pathIds;
+                    }
+
+                    pathIds.Add(pathId);
+                    i++;
+                }
+
+                pathId++;
+            }
+
+            return result;
         }
 
         private static void PrintPatterns(Progression progression)

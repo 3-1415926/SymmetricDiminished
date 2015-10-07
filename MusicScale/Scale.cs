@@ -50,6 +50,16 @@ namespace MusicScale
             }
         }
 
+        public int GetDifference(Scale other)
+        {
+            return GetDifference(this, other);
+        }
+
+        public static int GetDifference(Scale a, Scale b)
+        {
+            return Common.GetSetBitsCount((a.Mask ^ b.Mask) & Common.OctaveMask);
+        }
+
         public override bool Equals(object obj)
         {
             return obj is Scale ? Equals((Scale)obj) : false;

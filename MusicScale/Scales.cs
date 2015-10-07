@@ -134,7 +134,7 @@ namespace MusicScale
             ulong probesMask = 0;
             foreach (var probe in probes)
             {
-                probesMask |= Common.ChordInAllOctaves(probe.Item2(progression[Common.ModuloOctave(index + probe.Item1)]));
+                probesMask |= Common.ChordInAllOctaves(probe.Item2(progression[(index + probe.Item1 + progression.Count) % progression.Count]));
                 bool foundFit = false;
                 foreach (var result in results)
                 {
@@ -149,6 +149,131 @@ namespace MusicScale
             }
 
             return results;
+        }
+
+        public static IEnumerable<List<NamedScale>> FindFit(Progression progression, bool includeHarmonicScales)
+        {
+            for (int i = 0; i < progression.Count; i++)
+            {
+                yield return Scales.FindFit(progression, i, includeHarmonicScales).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Given the sequence of scale choices (for each step there are possibly multiple fitting scales)
+        /// we try to choose the scale at each step such that we minimize the overall note differences caused by
+        /// scale changes. 
+        /// </summary>
+        /// <param name="scaleChoices">Possible scale choices for each step in progression, as returned by the <seealso cref="FindFit"/> method.</param>
+        /// <returns>
+        /// Indices of the scales for each step in progression corresponding to the "best" path. If
+        /// there are multiple paths with same best score, we return all of them.
+        /// </returns>
+        public static IEnumerable<IList<int>> FindBestScalePaths(List<List<NamedScale>> scaleChoices)
+        {
+            ICollection<NamedScale> previousLevel = null;
+            var distances = new List<List<int>>();
+            int currentLevel = 0;
+
+            foreach (var level in scaleChoices)
+            {
+                if (currentLevel == 0)
+                {
+                    distances.Add(Enumerable.Repeat(0, level.Count).ToList());
+                    currentLevel += 1;
+                    previousLevel = level;
+                    continue;
+                }
+
+                distances.Add(new List<int>());
+                foreach (var scale in level)
+                {
+                    var minDistance = int.MaxValue;
+
+                    int j = 0;
+                    foreach (var previousScale in previousLevel)
+                    {
+                        // totalDistance would be a total number of note changes since the beggining of progression if we choose this scale.
+                        var distance = scale.Scale.GetDifference(previousScale.Scale);
+                        var totalDistance = distances[currentLevel - 1][j] + distance;
+                        if (totalDistance < minDistance)
+                        {
+                            minDistance = totalDistance;
+                        }
+
+                        // If we are on a "perfect" path, it couldn't get better so we break early
+                        if (minDistance == 0)
+                        {
+                            break;
+                        }
+
+                        j++;
+                    }
+
+                    distances[currentLevel].Add(minDistance);
+                }
+                
+                currentLevel += 1;
+                previousLevel = level;
+            }
+
+            Func<int, int, int, int> distanceGetter = delegate (int level, int i, int j)
+            {
+                return scaleChoices[level][i].Scale.GetDifference(scaleChoices[(level + 1) % scaleChoices.Count][j].Scale);
+            };
+
+            var lastLevelDistances = distances[distances.Count - 1];
+            var bestPathLength = lastLevelDistances.Min();
+
+            for (int i = 0; i < lastLevelDistances.Count; i++)
+            {
+                if (lastLevelDistances[i] == bestPathLength)
+                {
+                    foreach (var bestPath in BacktrackBestPaths(i, bestPathLength, distances, distanceGetter))
+                    {
+                        yield return bestPath.Reverse().ToList();
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<IEnumerable<int>> BacktrackBestPaths(int startFrom, int bestLength, List<List<int>> distances, Func<int, int, int, int> distanceGetter)
+        {
+            var path = new int[distances.Count];
+            path[0] = startFrom;
+
+            var level = distances.Count - 2;
+            foreach (var bestPath in BacktrackBestPaths(path, level, bestLength, distances, distanceGetter))
+            {
+                yield return bestPath;
+            }
+        }
+
+        private static IEnumerable<IEnumerable<int>> BacktrackBestPaths(IList<int> path, int level, int bestLength, List<List<int>> distances, Func<int, int, int, int> distanceGetter)
+        {
+            var currentPathLength = distances.Count - level - 1;
+            var currentLevelDistances = distances[level];
+            var nodeIndexFromPreviousLevel = path[currentPathLength - 1];
+
+            for (int i = 0; i < currentLevelDistances.Count; i++)
+            {
+                var directDistance = distanceGetter(level, i, nodeIndexFromPreviousLevel);
+                var pathLengthIfGoThroughCurrentNode = currentLevelDistances[i] + directDistance;
+                if (pathLengthIfGoThroughCurrentNode == bestLength)
+                {
+                    path[currentPathLength] = i;
+                    if (level == 0)
+                    {
+                        yield return path;
+                        continue;
+                    }
+
+                    foreach (var bestPath in BacktrackBestPaths(path, level - 1, bestLength - directDistance, distances, distanceGetter))
+                    {
+                        yield return path;
+                    }
+                }
+            }
         }
 
         private static bool FitsAlteredWith5th(Chord chord, Scale[] scales, int scaleIndex)

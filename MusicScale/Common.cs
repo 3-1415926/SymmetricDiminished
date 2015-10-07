@@ -113,5 +113,21 @@ namespace MusicScale
                     result |= noteMask;
             return result;
         }
+
+        public static int GetSetBitsCount(ulong x)
+        {
+            int result = 0;
+
+            while (x > 0)
+            {
+                if ((x & 1) == 1)
+                {
+                    result += 1;
+                }
+                x >>= 1;
+            }
+
+            return result;
+        }
     }
 }
